@@ -24,7 +24,7 @@ import Converter from './Converter';
 function Dashboard() {
   const [showDrawer, setShowDrawer] = useState(true);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
-  const [ttsHistory, setTtsHistory] = useState([]); // Changement de recentProjects à ttsHistory
+  const [ttsHistory, setTtsHistory] = useState([]);
   const [userProfile, setUserProfile] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -78,10 +78,33 @@ function Dashboard() {
       setUserProfile(profileData.user);
       
       // Récupération de l'historique TTS
+      await fetchTtsHistory(token);
+      
+    } catch (error) {
+      console.error('Erreur:', error);
+      setError(error.message);
+      
+      // Si une erreur d'authentification survient, rediriger vers la connexion
+      if (error.message.includes('non autorisé') || error.message.includes('token')) {
+        localStorage.removeItem('token');
+        navigate('/login');
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Fonction séparée pour récupérer uniquement l'historique TTS
+  const fetchTtsHistory = async (token = null) => {
+    const authToken = token || localStorage.getItem('token');
+    
+    if (!authToken) return;
+
+    try {
       const historyResponse = await fetch('http://localhost:5000/api/tts/history', {
         method: 'GET',
         headers: {
-          'Authorization': `Bearer ${token}`,
+          'Authorization': `Bearer ${authToken}`,
           'Content-Type': 'application/json'
         }
       });
@@ -122,18 +145,69 @@ function Dashboard() {
 
       setTtsHistory(formattedHistory);
     } catch (error) {
-      console.error('Erreur:', error);
-      setError(error.message);
-      
-      // Si une erreur d'authentification survient, rediriger vers la connexion
-      if (error.message.includes('non autorisé') || error.message.includes('token')) {
-        localStorage.removeItem('token');
-        navigate('/login');
-      }
-    } finally {
-      setIsLoading(false);
+      console.error('Erreur lors de la récupération de l\'historique:', error);
     }
   };
+
+  // Fonction pour ajouter une nouvelle entrée à l'historique
+  const addToHistory = (newRecord) => {
+    const formattedRecord = {
+      id: newRecord.id || Date.now(), // Utiliser un ID temporaire si pas fourni
+      tts_data_id: newRecord.tts_data_id || newRecord.id,
+      title: newRecord.title,
+      played_at: new Date().toLocaleString('fr-FR'),
+      preview: newRecord.text_content ? newRecord.text_content.substring(0, 100) + '...' : '',
+      type: determineProjectType(newRecord.title, newRecord.voiceSettings || {}),
+      content: newRecord.text_content || '',
+      voiceSettings: newRecord.voiceSettings || {}
+    };
+
+    // Ajouter au début de la liste (plus récent en premier)
+    setTtsHistory(prevHistory => [formattedRecord, ...prevHistory]);
+  };
+
+  // Fonction pour rafraîchir l'historique (appelée depuis le composant Converter)
+  const refreshHistory = () => {
+    fetchTtsHistory();
+  };
+
+  // Utiliser un interval pour vérifier périodiquement les nouveaux enregistrements
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    // Rafraîchir l'historique toutes les 10 secondes si l'utilisateur est actif
+    const interval = setInterval(() => {
+      // Vérifier si l'onglet est actif
+      if (!document.hidden) {
+        fetchTtsHistory();
+      }
+    }, 10000); // 10 secondes
+
+    return () => clearInterval(interval);
+  }, []);
+
+  // Écouter les événements personnalisés pour les nouveaux TTS
+  useEffect(() => {
+    const handleNewTts = (event) => {
+      const newRecord = event.detail;
+      addToHistory(newRecord);
+    };
+
+    const handleRefreshHistory = () => {
+      fetchTtsHistory();
+    };
+
+    // Ajouter les écouteurs d'événements
+    window.addEventListener('newTtsRecord', handleNewTts);
+    window.addEventListener('refreshTtsHistory', handleRefreshHistory);
+
+    // Nettoyer les écouteurs
+    return () => {
+      window.removeEventListener('newTtsRecord', handleNewTts);
+      window.removeEventListener('refreshTtsHistory', handleRefreshHistory);
+    };
+  }, []);
   
   // Déterminer le type de projet en fonction du titre et des paramètres de voix
   const determineProjectType = (title, voiceSettings) => {
@@ -290,7 +364,7 @@ function Dashboard() {
           <h1>Tableau de bord</h1>
         </div>
         
-        {/* Afficher directement le convertisseur sans onglets */}
+        {/* Afficher directement le convertisseur */}
         <Converter />
       </div>
     </div>

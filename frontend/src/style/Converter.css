@@ -268,3 +268,64 @@
       flex-direction: column;
     }
   }
+  /* Ajoutez ce CSS à votre fichier Converter.css */
+
+.content-type-selector {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 20px;
+  justify-content: center;
+}
+
+.content-type-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 15px 20px;
+  border: 2px solid #e0e0e0;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: white;
+  min-width: 100px;
+}
+
+.content-type-option:hover {
+  border-color: #007bff;
+  background: #f8f9fa;
+  transform: translateY(-2px);
+}
+
+.content-type-option.active {
+  border-color: #007bff;
+  background: #007bff;
+  color: white;
+}
+
+.content-type-option .content-icon {
+  font-size: 24px;
+  margin-bottom: 8px;
+}
+
+.content-type-option span {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+@media (max-width: 768px) {
+  .content-type-selector {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .content-type-option {
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 10px;
+  }
+  
+  .content-type-option .content-icon {
+    margin-bottom: 0;
+    font-size: 20px;
+  }
+}

@@ -1,5 +1,4 @@
-// frontend/src/components/HomePage.js
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../style/Homepage.css';
 import { 
@@ -7,85 +6,18 @@ import {
   FaMicrophone, 
   FaPlay, 
   FaChevronDown, 
-  FaUser, 
   FaFileUpload,
-  FaHistory,
-  FaPlus,
-  FaBars,
-  FaTimes,
-  FaFile,
-  FaCog,
+  FaHeadphones,
   FaRocket,
   FaLock,
-  FaUnlock,
-  FaHeadphones
+  FaUnlock
 } from 'react-icons/fa';
-import { FiLogIn, FiUserPlus, FiLogOut } from 'react-icons/fi';
+import { FiLogIn, FiUserPlus } from 'react-icons/fi';
 
 function HomePage({ onLogin, onSignup }) {
   const [inputText, setInputText] = useState('');
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [showDrawer, setShowDrawer] = useState(false);
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
-  const [recentConversations, setRecentConversations] = useState([]);
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [userProfile, setUserProfile] = useState(null);
-  const [freeTrialsUsed, setFreeTrialsUsed] = useState(() => {
-    return parseInt(localStorage.getItem('freeTrialsUsed') || '0');
-  });
-  const [generatedAudios, setGeneratedAudios] = useState([]);
   const navigate = useNavigate();
-  
-  // Vérifier si l'utilisateur est connecté lors du chargement du composant
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    
-    if (token) {
-      setIsAuthenticated(true);
-      // Charger les conversations récentes et le profil utilisateur
-      fetchRecentConversations();
-      fetchUserProfile();
-    } else {
-      setIsAuthenticated(false);
-    }
-    
-    // Initialiser l'état du drawer selon l'authentification et la taille de l'écran
-    setShowDrawer(window.innerWidth > 768 && token != null);
-    
-    // Gérer le redimensionnement de la fenêtre
-    const handleResize = () => {
-      const width = window.innerWidth;
-      setIsMobile(width <= 768);
-      setShowDrawer(width > 768 && localStorage.getItem('token') != null);
-    };
-    
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []); // S'exécute uniquement au montage
-  
-  // Simuler la récupération des conversations récentes
-  const fetchRecentConversations = () => {
-    // À remplacer par un appel API réel
-    const mockConversations = [
-      { id: 1, title: "Narration entreprise", date: "2025-04-12", preview: "Présentation audio de notre entreprise..." },
-      { id: 2, title: "Audiobook aventure", date: "2025-04-10", preview: "Il était une fois un voyageur..." },
-      { id: 3, title: "Script de podcast tech", date: "2025-04-08", preview: "Bienvenue dans notre podcast sur..." },
-    ];
-    setRecentConversations(mockConversations);
-  };
-  
-  // Simuler la récupération du profil utilisateur
-  const fetchUserProfile = () => {
-    // À remplacer par un appel API réel
-    const mockProfile = {
-      name: "Jean Dupont",
-      email: "jean.dupont@example.com",
-      avatar: "/images/avatar-placeholder.png"
-    };
-    setUserProfile(mockProfile);
-  };
 
-  // Navigation functions
   const navigateToLogin = () => {
     if (onLogin) {
       onLogin();
@@ -101,149 +33,9 @@ function HomePage({ onLogin, onSignup }) {
       navigate('/signup');
     }
   };
-  
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    setIsAuthenticated(false);
-    setUserProfile(null);
-    setRecentConversations([]);
-    setShowDrawer(false);
-    navigate('/');
-  };
-  
-  const handleNewConversation = () => {
-    setInputText('');
-    setSelectedFile(null);
-    // Logique pour créer une nouvelle conversation
-  };
-  
-  const handleFileUpload = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      setSelectedFile(file);
-      // Ajouter ici la logique pour traiter le fichier
-    }
-  };
-  
-  const handleSubmit = () => {
-    // Logique pour traiter le texte saisi et/ou le fichier uploadé
-    console.log("Texte soumis:", inputText);
-    if (selectedFile) {
-      console.log("Fichier soumis:", selectedFile.name);
-    }
-    
-    // Rediriger en fonction du contexte
-    if (!isAuthenticated) {
-      // Si non authentifié, inciter à se connecter
-      alert("Veuillez vous connecter pour continuer");
-      navigateToLogin();
-    } else {
-      // Si authentifié, traiter la requête
-      // Ici vous pourriez appeler votre API pour générer le contenu
-      alert("Génération audio en cours...");
-    }
-  };
-  
-  const toggleDrawer = () => {
-    setShowDrawer(!showDrawer);
-  };
-  
-  // Composant pour le contenu utilisateur authentifié
-  const AuthenticatedContent = () => (
-    <>
-      {/* Zone de saisie principale */}
-      <div className="input-container">
-        <textarea
-          className="main-input"
-          value={inputText}
-          onChange={(e) => setInputText(e.target.value)}
-          maxLength={500}
-          placeholder="Entrez votre texte à convertir en audio..."
-        />
-        <div className="input-actions">
-          <div className="character-count">{inputText.length}/500</div>
-          <label className="file-upload-label">
-            <FaFileUpload className="upload-icon" />
-            <span>Importer un fichier texte (TXT, PDF)</span>
-            <input 
-              type="file" 
-              accept=".txt,.pdf" 
-              onChange={handleFileUpload} 
-              style={{ display: 'none' }}
-            />
-          </label>
-          {selectedFile && (
-            <div className="selected-file">
-              <FaFile /> {selectedFile.name}
-              <button className="remove-file" onClick={() => setSelectedFile(null)}>
-                <FaTimes />
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
-      
-      {/* Barre d'actions */}
-      <div className="action-bar">
-        <div className="language-selector">
-          <button className="language-button">
-            <img src="/images/fr-flag.png" alt="FR Flag" className="flag-icon" />
-            <span>Français</span>
-            <FaChevronDown className="dropdown-icon" />
-          </button>
-        </div>
-        
-        <div className="generation-options">
-          <h3>Générer du contenu audio</h3>
-          <div className="action-buttons">
-            <button className="action-button story-button">
-              <FaBook className="icon" />
-              <span>NARRATION</span>
-            </button>
-            
-            <button className="action-button podcast-button">
-              <FaMicrophone className="icon" />
-              <span>PODCAST</span>
-            </button>
-            
-            <button className="action-button audiobook-button">
-              <FaHeadphones className="icon" />
-              <span>LIVRE AUDIO</span>
-            </button>
-          </div>
-        </div>
-        
-        <button className="submit-button" onClick={handleSubmit}>
-          <FaPlay className="submit-icon" />
-          <span>GÉNÉRER AUDIO</span>
-        </button>
-      </div>
-      
-      {/* Zone de projets récents */}
-      <div className="recent-projects-section">
-        <h3 className="section-title">Vos projets audio récents</h3>
-        <div className="projects-grid">
-          {recentConversations.map(project => (
-            <div key={project.id} className="project-card">
-              <div className="project-icon">
-                {project.title.includes('podcast') ? <FaMicrophone /> : 
-                 project.title.includes('Audiobook') ? <FaHeadphones /> : <FaBook />}
-              </div>
-              <div className="project-details">
-                <h4>{project.title}</h4>
-                <p className="project-date">{project.date}</p>
-                <p className="project-preview">{project.preview}</p>
-              </div>
-              <button className="project-action">Réécouter</button>
-            </div>
-          ))}
-        </div>
-      </div>
-    </>
-  );
-  
-  // Composant pour le contenu utilisateur non authentifié
-  const UnauthenticatedContent = () => (
+
+  // Contenu pour tous les utilisateurs (anciennement UnauthenticatedContent)
+  const MainContent = () => (
     <>
       {/* Bannière principale */}
       <div className="welcome-banner">
@@ -380,73 +172,12 @@ function HomePage({ onLogin, onSignup }) {
       </div>
     </>
   );
-  
+
   // Rendu principal du composant
   return (
     <div className="home-page">
-      {/* Bouton menu hamburger mobile - visible uniquement si authentifié */}
-      {isAuthenticated && (
-        <button className="mobile-menu-toggle" onClick={toggleDrawer}>
-          {showDrawer ? <FaTimes /> : <FaBars />}
-        </button>
-      )}
-      
-      {/* Drawer gauche - visible uniquement si authentifié */}
-      {isAuthenticated && (
-        <div className={`drawer ${showDrawer ? 'drawer-open' : 'drawer-closed'}`}>
-          {/* En-tête du drawer */}
-          <div className="drawer-header">
-            <h2>TTS Application</h2>
-            <button className="new-conversation-button" onClick={handleNewConversation}>
-              <FaPlus /> Nouveau projet audio
-            </button>
-          </div>
-          
-          {/* Conversations récentes */}
-          <div className="recent-conversations">
-            <h3><FaHistory /> Projets audio récents</h3>
-            {recentConversations.length > 0 ? (
-              <ul className="conversation-list">
-                {recentConversations.map(conv => (
-                  <li key={conv.id} className="conversation-item">
-                    <div className="conversation-title">{conv.title}</div>
-                    <div className="conversation-date">{conv.date}</div>
-                    <div className="conversation-preview">{conv.preview}</div>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="no-conversations">Aucun projet audio récent</p>
-            )}
-          </div>
-          
-          {/* Profil utilisateur */}
-          <div className="user-profile">
-            {userProfile && (
-              <>
-                <div className="profile-avatar">
-                  <img src={userProfile.avatar} alt="Avatar utilisateur" />
-                </div>
-                <div className="profile-info">
-                  <div className="profile-name">{userProfile.name}</div>
-                  <div className="profile-email">{userProfile.email}</div>
-                </div>
-                <div className="profile-actions">
-                  <button className="profile-action-button" onClick={() => navigate('/profile')}>
-                    <FaCog />
-                  </button>
-                  <button className="profile-action-button logout" onClick={handleLogout}>
-                    <FiLogOut />
-                  </button>
-                </div>
-              </>
-            )}
-          </div>
-        </div>
-      )}
-      
       {/* Contenu principal */}
-      <div className={`main-content ${(showDrawer && isAuthenticated) ? 'with-drawer' : 'full-width'}`}>
+      <div className="main-content full-width">
         <div className="content-wrapper">
           {/* En-tête commun */}
           <div className="app-header">
@@ -454,8 +185,8 @@ function HomePage({ onLogin, onSignup }) {
             <p className="app-subtitle">Transformez vos textes en contenus audio professionnels</p>
           </div>
           
-          {/* Contenu différent selon l'état d'authentification */}
-          {isAuthenticated ? <AuthenticatedContent /> : <UnauthenticatedContent />}
+          {/* Afficher uniquement le contenu principal */}
+          <MainContent />
           
           {/* Footer commun */}
           <div className="main-footer">
