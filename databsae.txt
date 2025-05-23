@@ -1,0 +1,68 @@
+--- Création de la base de données
+CREATE DATABASE IF NOT EXISTS tts_app CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- Utiliser la base de données
+USE tts_app;
+
+-- Table des utilisateurs (mise à jour pour inclure les IDs sociaux)
+CREATE TABLE IF NOT EXISTS users (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  name VARCHAR(100) NOT NULL,
+  email VARCHAR(100) UNIQUE,
+  password VARCHAR(255),
+  google_id VARCHAR(100) UNIQUE,
+  facebook_id VARCHAR(100) UNIQUE,
+  created_at DATETIME NOT NULL,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- Table pour stocker les données TTS (textes enregistrés)
+CREATE TABLE IF NOT EXISTS tts_data (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  user_id INT NOT NULL,
+  title VARCHAR(255) NOT NULL,
+  text_content TEXT,
+  audio_path VARCHAR(255),
+  voice_settings JSON,
+  created_at DATETIME NOT NULL,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- Table pour les paramètres utilisateur
+CREATE TABLE IF NOT EXISTS user_settings (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  user_id INT NOT NULL UNIQUE,
+  default_voice VARCHAR(50),
+  default_speed FLOAT DEFAULT 1.0,
+  default_pitch FLOAT DEFAULT 1.0,
+  theme VARCHAR(20) DEFAULT 'light',
+  created_at DATETIME NOT NULL,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- Table pour l'historique TTS
+CREATE TABLE IF NOT EXISTS tts_history (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  user_id INT NOT NULL,
+  tts_data_id INT NOT NULL,
+  played_at DATETIME NOT NULL,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY (tts_data_id) REFERENCES tts_data(id) ON DELETE CASCADE
+);
+
+-- Table pour les sessions
+CREATE TABLE IF NOT EXISTS sessions (
+  session_id VARCHAR(128) COLLATE utf8mb4_bin NOT NULL,
+  expires INT(11) UNSIGNED NOT NULL,
+  data MEDIUMTEXT COLLATE utf8mb4_bin,
+  PRIMARY KEY (session_id)
+);
+
+-- Index pour améliorer les performances des requêtes
+CREATE INDEX idx_users_email ON users(email);
+CREATE INDEX idx_users_google_id ON users(google_id);
+CREATE INDEX idx_users_facebook_id ON users(facebook_id);
+CREATE INDEX idx_tts_data_user_id ON tts_data(user_id);
+CREATE INDEX idx_tts_history_user_id ON tts_history(user_id);

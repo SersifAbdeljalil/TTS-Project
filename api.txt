@@ -1,0 +1,36 @@
+npm install express cors body-parser mysql2 express-session express-mysql-session passport passport-google-oauth20 passport-facebook bcryptjs jsonwebtoken dotenv multer pdf-parse gtts uuid
+-------------------------
+Core frameworks & utilities:
+
+express: Web framework for Node.js
+cors: Enable CORS (Cross-Origin Resource Sharing)
+body-parser: Parse HTTP request bodies
+dotenv: Load environment variables from .env file
+uuid: Generate unique identifiers
+
+
+Database:
+
+mysql2: MySQL client for Node.js
+express-mysql-session: Store sessions in MySQL
+
+
+Authentication:
+
+express-session: Session middleware
+passport: Authentication middleware
+passport-google-oauth20: Google OAuth 2.0 strategy
+passport-facebook: Facebook authentication strategy
+bcryptjs: Password hashing
+jsonwebtoken: JWT token generation and verification
+
+
+File handling:
+
+multer: Handle file uploads
+pdf-parse: Extract text from PDF files
+
+
+Text-to-Speech:
+
+gtts: Google Text-to-Speech API wrapper
